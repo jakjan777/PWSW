@@ -1,0 +1,53 @@
+@model PWSWlab3.ViewModels.NoteFormViewModel
+
+<!doctype html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8" />
+    <title>Edytuj notatke</title>
+    <style>
+        body { background: #f3f4f6; color: #1f2937; font-family: Arial, sans-serif; margin: 0; }
+        main { background: #fff; border: 1px solid #d1d5db; margin: 32px auto; max-width: 640px; padding: 24px; }
+        h1 { margin-top: 0; }
+        label { display: block; margin-top: 12px; }
+        input[type=text], textarea, select { border: 1px solid #9ca3af; padding: 6px; width: 100%; }
+        button, .button { background: #2563eb; border: 1px solid #1d4ed8; color: white; cursor: pointer; padding: 6px 10px; text-decoration: none; }
+        a { color: #1d4ed8; }
+        .validation { margin: 12px 0; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Edytuj notatke</h1>
+
+        <form method="post" asp-controller="Notes" asp-action="Edit" asp-route-id="@Model.Id">
+            @Html.AntiForgeryToken()
+            <div class="validation" asp-validation-summary="All"></div>
+
+            <label asp-for="Title">Tytul</label>
+            <input asp-for="Title" />
+
+            <label asp-for="Content">Tresc</label>
+            <textarea asp-for="Content" rows="8"></textarea>
+
+            <label asp-for="Category">Kategoria</label>
+            <select asp-for="Category">
+                <option value="">Bez kategorii</option>
+                <option value="Praca">Praca</option>
+                <option value="Osobiste">Osobiste</option>
+                <option value="Pomysly">Pomysly</option>
+            </select>
+
+            <label>
+                <input asp-for="IsPinned" />
+                Przypnij notatke
+            </label>
+
+            <p>
+                <button type="submit">Zapisz zmiany</button>
+                <a asp-controller="Notes" asp-action="Index">Wroc</a>
+            </p>
+        </form>
+    </main>
+</body>
+</html>

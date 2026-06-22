@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PWSWlab3.csproj" />
+  <Project Path="NotatkiApp\NotatkiApp.csproj" />
+</Solution>

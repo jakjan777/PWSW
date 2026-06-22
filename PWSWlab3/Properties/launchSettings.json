@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "PWSWlab3": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:54789;http://localhost:54790"
+    }
+  }
+}

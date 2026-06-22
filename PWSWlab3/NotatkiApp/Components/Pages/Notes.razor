@@ -1,0 +1,247 @@
+@page "/notes"
+@inject INoteService NoteService
+@inject INoteClassifier Classifier
+@inject ExportService ExportService
+@inject INotificationService NotificationService
+@inject RepositoryCacheDiagnostics CacheDiagnostics
+
+<h1>Moje notatki</h1>
+<p><a href="/">Wróć do strony głównej</a></p>
+
+<div class="toolbar">
+    <input
+        class="search-box"
+        type="text"
+        @bind="searchInput"
+        @bind:event="oninput"
+        @onkeyup="OnSearchKeyUp"
+        placeholder="Szukaj notatek..." />
+
+    <button class="btn" @onclick="ApplySearch">Szukaj</button>
+    <button class="btn secondary" @onclick="ClearSearch">Wyczyść</button>
+    <button class="btn" @onclick="ShowCreateForm">Nowa notatka</button>
+    <button class="btn secondary" @onclick="ExportNotesAsync">Eksport JSON</button>
+    <button class="btn secondary" @onclick="ShareNotesAsync">Udostępnij JSON</button>
+</div>
+
+<p>Znaleziono: @FilteredNotes.Count()</p>
+<p class="cache-status">@CacheDiagnostics.LastEvent</p>
+
+<div class="classification-summary">
+    @foreach (var group in ClassificationSummary)
+    {
+        <span>@GetClassLabel(group.Key): @group.Count()</span>
+    }
+</div>
+
+@if (!string.IsNullOrWhiteSpace(exportMessage))
+{
+    <p class="export-message">@exportMessage</p>
+}
+
+@if (showForm)
+{
+    <div class="form-panel">
+        <label>
+            Tytuł
+            <input type="text" @bind="newTitle" @bind:event="oninput" placeholder="Tytuł notatki..." />
+        </label>
+
+        <label>
+            Treść
+            <textarea @bind="newContent" @bind:event="oninput" rows="4" placeholder="Treść notatki..."></textarea>
+        </label>
+
+        <div class="field-label">Kategoria</div>
+        <div class="category-buttons">
+            @foreach (var category in Categories)
+            {
+                <button
+                    class="category-choice @(newCategory == category ? "selected" : "")"
+                    @onclick="() => SetNewCategory(category)">
+                    @category
+                </button>
+            }
+
+            <button
+                class="category-choice @(newCategory is null ? "selected" : "")"
+                @onclick="() => SetNewCategory(null)">
+                Bez kategorii
+            </button>
+        </div>
+
+        <label class="inline">
+            <input type="checkbox" @bind="newIsPinned" />
+            Przypnij
+        </label>
+
+        <div class="live-classification">
+            <strong>Typ notatki:</strong> @GetClassLabel(DraftClass)
+            <br />
+            <span>@Classifier.GetRecommendation(DraftClass)</span>
+        </div>
+
+        <button class="btn" @onclick="CreateNoteAsync">Zapisz</button>
+        <button class="btn secondary" @onclick="CancelCreate">Anuluj</button>
+    </div>
+}
+
+<div class="notes-grid">
+    @foreach (var note in FilteredNotes)
+    {
+        <article class="note-card @(note.IsPinned ? "pinned" : "")">
+            <h2>@note.Title</h2>
+            <p>@Preview(note.Content)</p>
+
+            <div class="note-meta">
+                <span>@(note.Category ?? "brak kategorii")</span>
+                <span>@note.ModifiedAt.ToString("g")</span>
+            </div>
+
+            <p class="note-class">@GetClassLabel(Classifier.Classify(note))</p>
+            <p class="recommendation">@Classifier.GetRecommendation(Classifier.Classify(note))</p>
+
+            <div class="note-actions">
+                <a href="/notes/@note.Id">Edytuj</a>
+                <button class="link-button" @onclick="() => DeleteNoteAsync(note.Id)">Usuń</button>
+            </div>
+        </article>
+    }
+</div>
+
+@code {
+    private string searchQuery = string.Empty;
+    private string searchInput = string.Empty;
+    private bool showForm;
+    private string newTitle = string.Empty;
+    private string newContent = string.Empty;
+    private string? newCategory;
+    private bool newIsPinned;
+    private string exportMessage = string.Empty;
+    private static readonly string[] Categories = ["Pilne", "Praca", "Osobiste", "Pomysly", "Archiwum"];
+
+    private IEnumerable<Note> FilteredNotes =>
+        string.IsNullOrWhiteSpace(searchQuery)
+            ? NoteService.GetAll()
+            : NoteService.GetAll().Where(note =>
+                note.Title.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                note.Content.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+
+    private ILookup<NoteClass, Note> ClassificationSummary =>
+        NotatkiApp.Services.NoteClassifier.BatchClassify(FilteredNotes);
+
+    private NoteClass DraftClass => Classifier.Classify(new Note
+    {
+        Title = newTitle,
+        Content = newContent,
+        Category = newCategory,
+        IsPinned = newIsPinned
+    });
+
+    private void ApplySearch()
+    {
+        searchQuery = searchInput;
+    }
+
+    private void OnSearchKeyUp(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            ApplySearch();
+        }
+    }
+
+    private void ClearSearch()
+    {
+        searchInput = string.Empty;
+        searchQuery = string.Empty;
+    }
+
+    private void ShowCreateForm()
+    {
+        showForm = true;
+    }
+
+    private void SetNewCategory(string? category)
+    {
+        newCategory = category;
+    }
+
+    private static string Preview(string content)
+    {
+        return string.IsNullOrWhiteSpace(content)
+            ? "(brak treści)"
+            : content.Length > 80
+                ? $"{content[..80]}..."
+                : content;
+    }
+
+    private static string GetClassLabel(NoteClass noteClass) =>
+        noteClass switch
+        {
+            NoteClass.Urgent => "Pilna",
+            NoteClass.Archived => "Archiwalna",
+            NoteClass.Extensive => "Obszerna",
+            NoteClass.PinnedWithCategory => "Przypięta z kategorią",
+            NoteClass.Pinned => "Przypięta",
+            NoteClass.General => "Ogólna",
+            _ => "Nieznana"
+        };
+
+    private async Task CreateNoteAsync()
+    {
+        if (string.IsNullOrWhiteSpace(newTitle))
+        {
+            return;
+        }
+
+        NoteService.Add(new Note
+        {
+            Title = newTitle,
+            Content = newContent,
+            Category = string.IsNullOrWhiteSpace(newCategory) ? null : newCategory,
+            IsPinned = newIsPinned
+        });
+
+        await NotificationService.ShowNotification(
+            "Dodano notatkę",
+            $"Utworzono notatkę: {newTitle}");
+
+        CancelCreate();
+    }
+
+    private void CancelCreate()
+    {
+        newTitle = string.Empty;
+        newContent = string.Empty;
+        newCategory = null;
+        newIsPinned = false;
+        showForm = false;
+    }
+
+    private async Task DeleteNoteAsync(Guid id)
+    {
+        NoteService.Delete(id);
+        await NotificationService.ShowNotification(
+            "Usunięto notatkę",
+            "Notatka została usunięta z listy.");
+    }
+
+    private async Task ExportNotesAsync()
+    {
+        var filePath = await ExportService.ExportToJsonAsync();
+        exportMessage = $"Wyeksportowano notatki do pliku: {filePath}";
+        await NotificationService.ShowNotification(
+            "Eksport zakończony",
+            "Notatki zapisano do pliku JSON.");
+    }
+
+    private async Task ShareNotesAsync()
+    {
+        var filePath = await ExportService.ShareExportAsync();
+        exportMessage = $"Przygotowano plik do udostępnienia: {filePath}";
+        await NotificationService.ShowNotification(
+            "Udostępnianie",
+            "Plik JSON został przygotowany do udostępnienia.");
+    }
+}

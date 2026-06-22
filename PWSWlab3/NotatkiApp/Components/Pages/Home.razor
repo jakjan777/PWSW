@@ -1,0 +1,27 @@
+@page "/"
+@inject INoteService NoteService
+
+<h1>NotatkiApp</h1>
+<p><a class="btn-link" href="/notes">Przejdź do listy notatek</a></p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Tytuł</th>
+            <th>Kategoria</th>
+            <th>Przypięta</th>
+            <th>Zmodyfikowano</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var note in NoteService.GetAll())
+        {
+            <tr>
+                <td>@note.Title</td>
+                <td>@(note.Category ?? "brak")</td>
+                <td>@(note.IsPinned ? "tak" : "nie")</td>
+                <td>@note.ModifiedAt.ToString("g")</td>
+            </tr>
+        }
+    </tbody>
+</table>

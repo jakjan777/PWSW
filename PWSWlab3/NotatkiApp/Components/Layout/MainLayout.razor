@@ -1,0 +1,23 @@
+@inherits LayoutComponentBase
+
+<div class="app-shell" data-theme="@theme">
+    <main class="page">
+        <div class="theme-toolbar">
+            <button class="btn secondary" @onclick="ToggleTheme">@ThemeButtonText</button>
+        </div>
+
+        @Body
+    </main>
+</div>
+
+@code {
+    private string theme = "light";
+
+    private string ThemeButtonText =>
+        theme == "light" ? "Włącz ciemny motyw" : "Włącz jasny motyw";
+
+    private void ToggleTheme()
+    {
+        theme = theme == "light" ? "dark" : "light";
+    }
+}

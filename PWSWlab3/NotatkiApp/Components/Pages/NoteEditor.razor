@@ -1,0 +1,123 @@
+@page "/notes/{Id:guid}"
+@inject INoteService NoteService
+@inject INoteClassifier Classifier
+@inject NavigationManager Navigation
+
+@if (note is null)
+{
+    <h1>Nie znaleziono notatki</h1>
+    <p>Notatka o podanym identyfikatorze nie istnieje.</p>
+    <button class="btn" @onclick="GoBack">Wróć</button>
+}
+else
+{
+    <h1>Edytuj notatkę</h1>
+
+    <div class="form-panel">
+        <label>
+            Tytuł
+            <input type="text" @bind="note.Title" @bind:event="oninput" />
+        </label>
+
+        <label>
+            Treść
+            <textarea @bind="note.Content" @bind:event="oninput" rows="10"></textarea>
+        </label>
+
+        <div class="field-label">Kategoria</div>
+        <div class="category-buttons">
+            @foreach (var category in Categories)
+            {
+                <button
+                    class="category-choice @(note.Category == category ? "selected" : "")"
+                    @onclick="() => SetCategory(category)">
+                    @category
+                </button>
+            }
+
+            <button
+                class="category-choice @(note.Category is null ? "selected" : "")"
+                @onclick="() => SetCategory(null)">
+                Bez kategorii
+            </button>
+        </div>
+
+        <label class="inline">
+            <input type="checkbox" @bind="note.IsPinned" />
+            Przypnij
+        </label>
+
+        <div class="live-classification">
+            <strong>Typ notatki:</strong> @GetClassLabel(Classifier.Classify(note))
+            <br />
+            <span>@Classifier.GetRecommendation(Classifier.Classify(note))</span>
+        </div>
+
+        <button class="btn" @onclick="Save">Zapisz</button>
+        <button class="btn secondary" @onclick="GoBack">Wróć</button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private Note? note;
+    private static readonly string[] Categories = ["Pilne", "Praca", "Osobiste", "Pomysly", "Archiwum"];
+
+    protected override void OnParametersSet()
+    {
+        var existing = NoteService.GetById(Id);
+        if (existing is null)
+        {
+            note = null;
+            return;
+        }
+
+        note = new Note
+        {
+            Id = existing.Id,
+            Title = existing.Title,
+            Content = existing.Content,
+            Category = existing.Category,
+            IsPinned = existing.IsPinned,
+            CreatedAt = existing.CreatedAt,
+            ModifiedAt = existing.ModifiedAt
+        };
+    }
+
+    private void Save()
+    {
+        if (note is not null)
+        {
+            NoteService.Update(note);
+        }
+
+        GoBack();
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/notes");
+    }
+
+    private void SetCategory(string? category)
+    {
+        if (note is not null)
+        {
+            note.Category = category;
+        }
+    }
+
+    private static string GetClassLabel(NoteClass noteClass) =>
+        noteClass switch
+        {
+            NoteClass.Urgent => "Pilna",
+            NoteClass.Archived => "Archiwalna",
+            NoteClass.Extensive => "Obszerna",
+            NoteClass.PinnedWithCategory => "Przypięta z kategorią",
+            NoteClass.Pinned => "Przypięta",
+            NoteClass.General => "Ogólna",
+            _ => "Nieznana"
+        };
+}
