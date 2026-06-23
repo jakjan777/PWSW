@@ -1,0 +1,5 @@
+Politechnika Bydgoska im. Jana i Jędrzeja Śniadeckich (PWSW) prowadzi kurs Programowanie w Srodowisku Windows.
+Laboratorium LAB-04 dotyczy sztucznej inteligencji on-device: lambdy, wzorzec Strategy, Foundry Local oraz ONNX Runtime.
+Studenci implementuja walidacje wiadomosci, pipeline Result<T>, persystencje historii w SQLite, cache z ValueTask oraz klienta REST do lokalnego modelu Phi-3-mini.
+Aplikacja koncowa umozliwia sumaryzacje dokumentow i tryb Q&A calkowicie lokalnie, bez wysylania danych do chmury.
+Zgodnie z regulaminem uczelni, materialy laboratoryjne sa przeznaczone wylacznie do celow dydaktycznych.
