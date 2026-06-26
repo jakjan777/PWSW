@@ -1,0 +1,8 @@
+{
+  "installPath": "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders",
+  "add": [
+    "Microsoft.VisualStudio.Workload.NativeDesktop",
+    "Microsoft.VisualStudio.Component.Windows11SDK.22621"
+  ],
+  "includeRecommended": true
+}

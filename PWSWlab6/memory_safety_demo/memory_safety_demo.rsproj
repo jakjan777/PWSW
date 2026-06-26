@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="Current">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B2C3D4E5-F6A7-8901-BCDE-F12345678901}</ProjectGuid>
+    <Keyword>Rust</Keyword>
+    <RootNamespace>memory_safety_demo</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <RustSource Include="src\main.rs" />
+    <RustSource Include="src\buffer_overflow.rs" />
+    <RustSource Include="src\ownership.rs" />
+    <RustSource Include="src\data_race.rs" />
+    <RustSource Include="src\concurrency.rs" />
+    <None Include="Cargo.toml" />
+  </ItemGroup>
+</Project>

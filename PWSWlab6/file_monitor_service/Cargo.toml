@@ -1,0 +1,9 @@
+[package]
+name = "file_monitor_service"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+windows-service = "0.7"
+log = "0.4"
+env_logger = "0.11"

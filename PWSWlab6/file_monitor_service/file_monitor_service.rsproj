@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="Current">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C3D4E5F6-A7B8-9012-CDEF-123456789012}</ProjectGuid>
+    <Keyword>Rust</Keyword>
+    <RootNamespace>file_monitor_service</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <RustSource Include="src\main.rs" />
+    <RustSource Include="src\service.rs" />
+    <RustSource Include="src\logger.rs" />
+    <None Include="Cargo.toml" />
+  </ItemGroup>
+</Project>

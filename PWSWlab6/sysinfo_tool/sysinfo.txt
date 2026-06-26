@@ -1,0 +1,3 @@
+Procesory: 32
+Pamiec dostepna: 1 GB
+System: Windows 10 Home
