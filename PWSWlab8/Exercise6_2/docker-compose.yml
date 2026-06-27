@@ -1,0 +1,28 @@
+services:
+  web:
+    build: .
+    ports:
+      - "5000:8080"
+    depends_on:
+      - db
+    environment:
+      - ConnectionStrings__Default=Host=db;Database=lab08;Username=postgres;Password=devpass
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: lab08
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: devpass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
