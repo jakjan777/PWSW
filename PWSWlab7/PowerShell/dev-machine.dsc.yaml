@@ -1,0 +1,73 @@
+$schema: https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2024/04/config/document.schema.json
+resources:
+  - name: Install VS Code
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Microsoft.VisualStudioCode
+      source: winget
+
+  - name: Install Git
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Git.Git
+      source: winget
+
+  - name: Install .NET 10 SDK
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Microsoft.DotNet.SDK.10
+      source: winget
+
+  - name: Install PowerShell 7
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Microsoft.PowerShell
+      source: winget
+
+  - name: Create Projects directory
+    type: Microsoft.DSC.Transitional/RunCommandOnSet
+    properties:
+      executable: powershell.exe
+      arguments:
+        - -NoProfile
+        - -Command
+        - if (-not (Test-Path 'C:\Projects')) { New-Item -ItemType Directory -Path 'C:\Projects' -Force | Out-Null }
+
+  - name: Create Tools directory
+    type: Microsoft.DSC.Transitional/RunCommandOnSet
+    properties:
+      executable: powershell.exe
+      arguments:
+        - -NoProfile
+        - -Command
+        - if (-not (Test-Path 'C:\Tools')) { New-Item -ItemType Directory -Path 'C:\Tools' -Force | Out-Null }
+
+  - name: Install Docker
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Docker.DockerDesktop
+      source: winget
+
+  - name: Install Windows Terminal
+    type: Microsoft.WinGet/Package
+    properties:
+      id: Microsoft.WindowsTerminal
+      source: winget
+
+  - name: Create Labs directory
+    type: Microsoft.DSC.Transitional/RunCommandOnSet
+    properties:
+      executable: powershell.exe
+      arguments:
+        - -NoProfile
+        - -Command
+        - if (-not (Test-Path 'C:\Projects\Labs')) { New-Item -ItemType Directory -Path 'C:\Projects\Labs' -Force | Out-Null }
+
+  - name: Create Docs directory
+    type: Microsoft.DSC.Transitional/RunCommandOnSet
+    properties:
+      executable: powershell.exe
+      arguments:
+        - -NoProfile
+        - -Command
+        - if (-not (Test-Path 'C:\Projects\Docs')) { New-Item -ItemType Directory -Path 'C:\Projects\Docs' -Force | Out-Null }
