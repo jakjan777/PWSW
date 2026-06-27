@@ -1,0 +1,88 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  PROJECT_PATH: 'Lab09_PackagedApp'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore
+        run: |
+          dotnet restore ${{ env.PROJECT_PATH }}
+          dotnet restore Lab09_PackagedApp.Tests
+
+      - name: Build
+        run: >
+          dotnet build ${{ env.PROJECT_PATH }}
+          --configuration Release --no-restore
+          -p:EnableMsixTooling=false
+
+      - name: Test with coverage
+        run: >
+          dotnet test Lab09_PackagedApp.Tests
+          --configuration Release --no-restore
+          --collect:"XPlat Code Coverage"
+          --results-directory ./coverage
+
+      - name: Publish
+        run: >
+          dotnet publish ${{ env.PROJECT_PATH }}
+          --configuration Release --runtime win-x64
+          -p:EnableMsixTooling=false
+          --output ./publish
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-build
+          path: ./publish/
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: ./coverage/**/coverage.cobertura.xml
+
+  build-matrix:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+        configuration: [Release]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Build for ${{ matrix.arch }}
+        run: >
+          dotnet publish ${{ env.PROJECT_PATH }}
+          --configuration ${{ matrix.configuration }}
+          --runtime win-${{ matrix.arch }}
+          -p:EnableMsixTooling=false
+          --output ./publish-${{ matrix.arch }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.arch }}
+          path: ./publish-${{ matrix.arch }}/

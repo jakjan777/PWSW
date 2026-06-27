@@ -1,0 +1,10 @@
+bin/
+obj/
+msix-layout/
+msix-contents/
+build-deps/
+*.user
+*.suo
+.vs/
+coverage/
+publish/

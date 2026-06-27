@@ -1,0 +1,21 @@
+<Solution>
+  <Project Path="Challenge1/Challenge1.csproj" />
+  <Project Path="Challenge2.Application/Challenge2.Application.csproj" />
+  <Project Path="Challenge2.Domain/Challenge2.Domain.csproj" />
+  <Project Path="Challenge2.Infrastructure/Challenge2.Infrastructure.csproj" />
+  <Project Path="Challenge2/Challenge2.csproj" />
+  <Project Path="Exercise1_1/Exercise1_1.csproj" />
+  <Project Path="Exercise1_2/Exercise1_2.csproj" />
+  <Project Path="Exercise2_1/Exercise2_1.csproj" />
+  <Project Path="Exercise3_1/Exercise3_1.csproj" />
+  <Project Path="Exercise4_1/Exercise4_1.csproj" />
+  <Project Path="Exercise5_2/Exercise5_2.csproj" />
+  <Project Path="KanbanSystem.Application/KanbanSystem.Application.csproj" />
+  <Project Path="KanbanSystem.Domain/KanbanSystem.Domain.csproj" />
+  <Project Path="KanbanSystem.Infrastructure/KanbanSystem.Infrastructure.csproj" />
+  <Project Path="Lab09_PackagedApp.Core/Lab09_PackagedApp.Core.csproj" />
+  <Project Path="Lab09_PackagedApp.Tests/Lab09_PackagedApp.Tests.csproj" />
+  <Project Path="Lab09_PackagedApp/Lab09_PackagedApp.csproj">
+    <Platform Project="x86" />
+  </Project>
+</Solution>
