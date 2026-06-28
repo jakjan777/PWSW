@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="FintechMonitor/FintechMonitor.csproj" />
+  <Project Path="OrderPipeline/OrderPipeline.csproj" />
+  <Project Path="PaymentGateway/PaymentGateway.csproj" />
+  <Project Path="SecurityAudit/SecurityAudit.csproj" />
+  <Project Path="SecurityScanner/SecurityScanner.csproj" />
+  <Project Path="Warehouse/Warehouse.csproj" />
+  <Project Path="XssDemo/XssDemo.csproj" />
+</Solution>

@@ -1,0 +1,48 @@
+LAB-10  CWICZENIE 7.1
+Roslyn Analyzers i audyt NuGet (DevSecOps)
+
+Projekt: C:\Users\jakja\source\repos\PWSWlab10\SecurityAudit
+
+================================================================================
+KONFIGURACJA .CSPROJ
+================================================================================
+
+Plik: SecurityAudit\SecurityAudit.csproj
+
+  TreatWarningsAsErrors = true
+  AnalysisLevel = latest-all
+  Microsoft.CodeAnalysis.NetAnalyzers 9.*
+
+Analizator CA2100 blokuje kompilacje przy niezabezpieczonym SQL.
+Projekt uzywa parametryzowanych zapytan w Services\UserQueries.cs.
+
+================================================================================
+KOMENDY AUDYTU NUGET (SCA)
+================================================================================
+
+cd C:\Users\jakja\source\repos\PWSWlab10\SecurityAudit
+
+dotnet list package --vulnerable --include-transitive
+
+dotnet list package --vulnerable --format json > vuln-report.json
+
+================================================================================
+GENEROWANIE SBOM (SPDX)
+================================================================================
+
+dotnet tool install --global Microsoft.Sbom.DotNetTool
+
+dotnet build --configuration Release
+
+$env:DeleteManifestDirIfPresent="true"
+sbom-tool generate -b ./bin/Release -bc . -pn SecurityAuditApp -pv 1.0.0 -ps "Student Developer"
+
+Wynik: bin\Release\_manifest\spdx_2.2\manifest.spdx.json
+
+================================================================================
+BUILD Z ANALIZATORAMI (SAST)
+================================================================================
+
+dotnet build --configuration Release /p:TreatWarningsAsErrors=true
+
+Kompilacja powinna zakonczyc sie powodzeniem przy bezpiecznym kodzie SQL.

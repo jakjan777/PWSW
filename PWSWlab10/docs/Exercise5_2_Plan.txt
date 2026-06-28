@@ -1,0 +1,49 @@
+LAB-10  CWICZENIE 5.2
+Trojpoziomowy plan dzialania na podstawie analizy STRIDE (cwiczenie 5.1)
+
+================================================================================
+PRIORYTET 1  NATYCHMIAST  przed dalszym rozwojem
+================================================================================
+
+Zagrozenie STRIDE          Mitygacja                          Implementacja
+-------------------------  ---------------------------------  ----------------------------------
+S  Podswycie pod API        OAuth 2.0, JWT                     SecurityAudit + Azure AD (prod)
+T  Manipulacja w transmisji TLS 1.3, HTTPS                     Program.cs AddHttpsRedirection, HSTS
+E  SQL injection            Parameterized queries              UserQueries.GetUserSecureAsync
+D  Przeciazenie API         Rate limiting                      Program.cs AddRateLimiter
+E  Eskalacja MSIX           AppContainer                       pakiet MSIX (prod)
+
+================================================================================
+PRIORYTET 2  PRZED RELEASE
+================================================================================
+
+Zagrozenie STRIDE          Mitygacja                          Implementacja
+-------------------------  ---------------------------------  ----------------------------------
+T  Manipulacja SQLite       DPAPI, szyfrowanie at-rest         SecureTokenStorage (cw. 6.1)
+R  Brak sladu operacji      Audit log, timestamp               AuditLog (cw. 6.1 / Wyzwanie 2)
+I  Wyciek z SQLite          Szyfrowanie at-rest                DPAPI
+D  OOM model AI             Timeout, limit tokenow             CancellationTokenSource
+
+================================================================================
+PRIORYTET 3  MONITOROWANIE  ciagle
+================================================================================
+
+Zagrozenie STRIDE          Mitygacja                          Implementacja
+-------------------------  ---------------------------------  ----------------------------------
+I  Wyciek z modelu AI       Filtrowanie output                 HtmlSanitizer (cw. 6.2)
+D  Ataki DDoS               WAF, alerty                        Azure Front Door / Cloudflare
+R  Brak audytu operacji     Retencja logow 90 dni              Azure Monitor / SIEM
+
+================================================================================
+WERYFIKACJA W KODZIE  dwa priorytety najwyzsze
+================================================================================
+
+1. HTTPS-only
+   Plik: C:\Users\jakja\source\repos\PWSWlab10\SecurityAudit\Program.cs
+   AddHttpsRedirection, AddHsts, UseHttpsRedirection, UseHsts
+
+2. Parameterized SQL
+   Plik: C:\Users\jakja\source\repos\PWSWlab10\SecurityAudit\Services\UserQueries.cs
+   LINQ Where oraz FromSqlInterpolated zamiast interpolacji stringow SQL
+
+Test: GET /test/sql-injection  wynik safe=true oznacza brak SQL injection

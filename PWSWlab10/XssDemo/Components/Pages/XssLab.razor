@@ -1,0 +1,58 @@
+@page "/xss"
+@rendermode InteractiveServer
+@using Ganss.Xss
+
+<PageTitle>XSS Demo</PageTitle>
+
+<h1>Cwiczenie 6.2: XSS w Blazor</h1>
+
+<div class="mb-3">
+    <label class="form-label">Tresc uzytkownika</label>
+    <input class="form-control" @bind="userInput" @bind:event="oninput" />
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">Bezpieczne: automatyczne enkodowanie Blazor</div>
+    <div class="card-body">
+        <p>@userInput</p>
+    </div>
+</div>
+
+<div class="card mb-3 border-danger">
+    <div class="card-header">Niebezpieczne: MarkupString bez sanityzacji</div>
+    <div class="card-body">
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" @bind="showUnsafe" id="unsafeCheck" />
+            <label class="form-check-label" for="unsafeCheck">Renderuj surowy HTML (tylko demo)</label>
+        </div>
+        @if (showUnsafe)
+        {
+            @((MarkupString)(userInput ?? ""))
+        }
+        else
+        {
+            <p class="text-muted">Wylaczone. NIGDY z niezaufanego zrodla w produkcji.</p>
+        }
+    </div>
+</div>
+
+<div class="card mb-3 border-success">
+    <div class="card-header">Bezpieczne HTML: sanityzacja HtmlSanitizer</div>
+    <div class="card-body">
+        @((MarkupString)SafeHtml)
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Wynik sanityzacji (tekst)</div>
+    <div class="card-body">
+        <code>@SafeHtml</code>
+    </div>
+</div>
+
+@code {
+    string? userInput = "<script>alert('xss')</script><b>Hello</b>";
+    bool showUnsafe;
+
+    string SafeHtml => new HtmlSanitizer().Sanitize(userInput ?? "");
+}

@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+  security-scan:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore SecurityAudit/SecurityAudit.csproj
+
+      - name: Audyt pakietow NuGet
+        shell: pwsh
+        run: |
+          $out = dotnet list SecurityAudit/SecurityAudit.csproj package --vulnerable --include-transitive 2>&1
+          if ($out -match "vulnerable packages|podatne na zagro") {
+            Write-Output $out
+          }
+          Write-Output "Audyt NuGet zakonczony."
+
+      - name: Build z analizatorami (SAST)
+        run: >
+          dotnet build SecurityAudit/SecurityAudit.csproj
+          --configuration Release
+          /p:TreatWarningsAsErrors=true
+
+      - name: Generuj SBOM
+        shell: pwsh
+        env:
+          DeleteManifestDirIfPresent: 'true'
+        run: |
+          dotnet tool install --global Microsoft.Sbom.DotNetTool
+          sbom-tool generate -b ./SecurityAudit/bin/Release -bc ./SecurityAudit `
+            -pn SecurityAuditApp -pv 1.0.0 -ps Student
+
+      - name: Upload SBOM jako artefakt
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: '**/manifest.spdx.json'
+
+      - name: Podpisz skrypt PowerShell
+        shell: pwsh
+        run: |
+          $cert = New-SelfSignedCertificate `
+            -Subject "CN=Lab10 Student Developer" `
+            -Type CodeSigning `
+            -KeyUsage DigitalSignature `
+            -CertStoreLocation "Cert:\CurrentUser\My" `
+            -HashAlgorithm SHA256 `
+            -NotAfter (Get-Date).AddYears(2)
+          foreach ($storeName in @("Root", "TrustedPublisher")) {
+            $store = New-Object System.Security.Cryptography.X509Certificates.X509Store($storeName, "CurrentUser")
+            $store.Open("ReadWrite")
+            $store.Add($cert)
+            $store.Close()
+          }
+          Set-AuthenticodeSignature `
+            -FilePath ".\SecurityAudit\deploy.ps1" `
+            -Certificate $cert `
+            -HashAlgorithm SHA256 | Out-Null
+          $sig = Get-AuthenticodeSignature ".\SecurityAudit\deploy.ps1"
+          Write-Output "Status podpisu: $($sig.Status)"

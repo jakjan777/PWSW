@@ -1,0 +1,13 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.db
+*.db-shm
+*.db-wal
+token.enc
+warehouse.db
+securityaudit.db
+vuln-report.json
+**/bin/Release/_manifest/

@@ -1,0 +1,42 @@
+LAB-10  CWICZENIE 7.2
+Kompletny job security-scan w GitHub Actions
+
+Plik workflow: C:\Users\jakja\source\repos\PWSWlab10\.github\workflows\ci.yml
+Skrypt do podpisu: C:\Users\jakja\source\repos\PWSWlab10\SecurityAudit\deploy.ps1
+
+================================================================================
+JOB security-scan (windows-latest)
+================================================================================
+
+Krok 1   checkout + setup-dotnet 10.0.x
+Krok 2   dotnet restore SecurityAudit
+Krok 3   audyt NuGet (dotnet list package --vulnerable)
+Krok 4   build Release z TreatWarningsAsErrors=true (SAST / Roslyn)
+Krok 5   generowanie SBOM (sbom-tool, DeleteManifestDirIfPresent=true)
+Krok 6   upload artefaktu manifest.spdx.json
+Krok 7   podpis Authenticode skryptu deploy.ps1 certyfikatem self-signed
+
+================================================================================
+JOB build (ubuntu-latest)
+================================================================================
+
+Podstawowy build calego rozwiazania na Linuxie (LAB-09 style).
+
+================================================================================
+LOKALNA WERYFIKACJA PODPISU
+================================================================================
+
+cd C:\Users\jakja\source\repos\PWSWlab10\SecurityAudit
+.\sign-deploy.ps1
+
+Oczekiwany Status: Valid
+
+================================================================================
+PUBLIKACJA NA GITHUB
+================================================================================
+
+git add .github/workflows/ci.yml SecurityAudit/deploy.ps1
+git commit -m "Add security-scan job to CI pipeline"
+git push
+
+W zakladce Actions na GitHub uruchomi sie workflow CI z jobem security-scan.
