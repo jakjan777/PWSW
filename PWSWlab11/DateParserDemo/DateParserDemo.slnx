@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="DateParserDemo.Tests/DateParserDemo.Tests.csproj" />
+  <Project Path="DateParserDemo/DateParserDemo.csproj" />
+</Solution>
